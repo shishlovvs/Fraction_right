@@ -1,4 +1,5 @@
 ﻿#include<iostream>
+using namespace std;
 using std::cin;
 using std::cout;
 using std::endl;
@@ -100,6 +101,34 @@ public:
 	{
 		return *this;
 	}
+	Fraction& operator/=(const Fraction& other)
+	{
+		return *this;
+	}
+	Fraction& operator++() //Prefix increment 
+	{
+		to_proper();
+		integer++;
+		return *this;
+	}
+	Fraction operator++(int)
+	{
+		to_proper();
+		Fraction buffer = *this; //сохраняем текущее состояние объекта
+		integer++;
+		return buffer;			//возвращаем старое значение
+	}
+	Fraction& operator--()
+	{
+		integer--;
+		return *this;
+	}
+	Fraction operator--(int)
+	{
+		Fraction buffer = *this;
+		integer--;
+		return buffer;
+	}
 
 	//METHODS
 	Fraction& to_proper()		//Переводит в правильную дробь - выделяет целую часть
@@ -116,7 +145,28 @@ public:
 	}
 	void reduce()			//сокращает дробь
 	{
-		to_improper();
+		int more; //большее значение
+		int less; //меньшее значение
+		int rest; //остаток от деления
+		if (numerator > denominator)
+		{
+			more = numerator;
+			less = denominator;
+		}
+		else
+		{
+			less = numerator;
+			more = denominator;
+		}
+		do
+		{
+			rest = more % less;
+			more = less;
+			less = rest;
+		} while (rest);
+		int GCD = more; //Greatest Common Divisor (набольший общий делитель)
+		numerator /= GCD;
+		denominator /= GCD;
 	}
 	Fraction& reverse()	//переворачивает дробь
 	{
@@ -140,18 +190,19 @@ public:
 	}
 };
 
-ostream& operator<<(ostream& os, const Fraction& obj)
-{
-	if (obj.get_integer())os << obj.get_integer();	
-	if (obj.get_numerator())
-	{
-		if (obj.get_integer())os << "(";
-		cout << obj.get_numerator() << "/" << obj.get_denominator();
-		if (obj.get_integer())os << ")";
-	}
-	else if (obj.get_integer() == 0)os << 0;
-	return os;
-}
+//???????????????????????????????????????? не работает ostream
+//ostream& operator<<(ostream& os, const Fraction& obj)
+//{
+//	if (obj.get_integer())os << obj.get_integer();	
+//	if (obj.get_numerator())
+//	{
+//		if (obj.get_integer())os << "(";
+//		cout << obj.get_numerator() << "/" << obj.get_denominator();
+//		if (obj.get_integer())os << ")";
+//	}
+//	else if (obj.get_integer() == 0)os << 0;
+//	return os;
+//}
 
 Fraction operator*(Fraction left, Fraction right)	//передаем по значению, 
 													//тогда автоматически left и right становятся буферами
@@ -196,11 +247,46 @@ Fraction operator/(Fraction left, Fraction right)
 	return left * right.reverse();	//Оператор * делает все преобразования 
 }
 
+										//COMPARISON OPERATORS (операторы сравнения)
+bool operator==(Fraction left, Fraction right)
+{
+	left.to_improper();
+	right.to_improper();
+	return(left.get_numerator() * right.get_denominator() == right.get_numerator() * left.get_denominator());
+}
 
+bool operator!=(const Fraction& left, const Fraction& right)
+{
+	return !(left == right);
+}
 
+bool operator>(Fraction left, Fraction right)
+{
+	return
+		left.to_improper().get_numerator() * right.to_improper().get_denominator() >
+		right.to_improper().get_numerator() * left.to_improper().get_denominator();
+}
+
+bool operator<(Fraction left, Fraction right)
+{
+	return
+		left.to_improper().get_numerator() * right.to_improper().get_denominator() <
+		right.to_improper().get_numerator() * left.to_improper().get_denominator();
+}
+
+bool operator>=(const Fraction& left, const Fraction& right)
+{
+	//return left > right || left == right;
+	return !(left < right);
+}
+bool operator<=(const Fraction& left, const Fraction& right)
+{
+	//return left < right || left == right;
+	return !(left > right);
+}
 
 //#define CONSTRUCTORS_CHECK
-#define OSTREAM_CHECK
+//#define OSTREAM_CHECK
 void main()
 {
 	setlocale(LC_ALL, "ru");
